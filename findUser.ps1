@@ -15,14 +15,14 @@ $workstation = "S" +$storeNum + $line
 $s = new-pssession $workstation
 
 #Output list of SIDs to .txt file
-$keyList = Invoke-command -Session $s -ScriptBlock {Get-ChildItem REGISTRY::HKEY_USERS|SELECT Name -ExpandProperty Name}| Out-File -FilePath .\keyList.txt
+$keyList = Invoke-command -Session $s -ScriptBlock {Get-ChildItem REGISTRY::HKEY_USERS|SELECT -ExpandProperty Name}
  
         #Check all SIDs on the workstation
-        Foreach ($key in Get-Content .\keyList.txt) {
+         Foreach ($key in $keyList) {
                        
                        #Only check the SIDs that the key is found under
                         if ($key -notmatch "Classes" -and $key.length -gt 25) {
-                                $sidUser = Invoke-command -Session $s -ScriptBlock {param($keyEntry)Get-ItemProperty REGISTRY::$keyEntry\SOFTWARE\Passlogix\Extensions\SessionManager|SELECT Username -ExpandProperty Username} -ArgumentList $key
+                               $sidUser = Invoke-command -Session $s -ScriptBlock {param($keyEntry)Get-ItemProperty REGISTRY::$keyEntry\SOFTWARE\Passlogix\Extensions\SessionManager|SELECT -ExpandProperty Username} -ArgumentList $key
                                
                                #Display if the user is logged onto the workstation
                                 if ($sidUser -match $userID) {
@@ -30,5 +30,5 @@ $keyList = Invoke-command -Session $s -ScriptBlock {Get-ChildItem REGISTRY::HKEY
                                 }
                         }
         }
-        Remove-PSSession $s
+    Remove-PSSession $s
 }
